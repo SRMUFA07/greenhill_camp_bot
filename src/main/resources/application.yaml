@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/greenhill_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN:8503069356:AAFfJPsn-vZPlqJjHDN02IaWOLyxdagHiSg}
+    username: ${TELEGRAM_BOT_USERNAME:greenhill_camp_bot}
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG

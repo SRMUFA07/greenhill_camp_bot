@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_container
+    environment:
+      POSTGRES_DB: greenhill_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - camp_network
+
+  telegram_bot:
+    build: .
+    container_name: greenhill_bot_container
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/greenhill_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      TELEGRAM_BOT_TOKEN: ${BOT_TOKEN}
+      TELEGRAM_BOT_USERNAME: ${BOT_USERNAME}
+    depends_on:
+      - postgres
+    volumes:
+      - ./src/main/resources/images:/app/images:ro
+    networks:
+      - camp_network
+    restart: always
+
+volumes:
+  postgres_data:
+
+networks:
+  camp_network:
+    driver: bridge
