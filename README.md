@@ -66,14 +66,14 @@ cp .env.example .env
 
 ```env
 # Токен бота, полученный у @BotFather в Telegram
-BOT_TOKEN=8503069356:AAFfJPsn-vZPlqJjHDN02IaWOLyxdagHiSg
+BOT_TOKEN=your_telegram_bot_token_here
 
 # Имя бота в Telegram
 BOT_USERNAME=greenhill_camp_bot
 
 # Telegram ID администратора (куда бот пересылает новые заявки)
 # Узнать свой ID можно через бота @userinfobot
-ADMIN_TG_ID=407457271
+ADMIN_TG_ID=your_telegram_id_here
 
 # Настройки базы данных (для сервера обязательно придумайте надежный пароль!)
 POSTGRES_DB=greenhill_db
