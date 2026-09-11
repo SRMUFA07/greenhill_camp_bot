@@ -281,8 +281,8 @@ public class ApplicationController {
             <a href="tel:+79174608201">+7 (917) 460-82-01</a>
             
            
-            🌐 <b>Сайт для заявок:</b>
-            👉 vk.link/greenhill_ufa
+            🌐 <b>Наш сайт:</b>
+            👉 <a href="https://smartyplus.ru/greenhill_ufa">smartyplus.ru/greenhill_ufa</a>
             
             🤖 <b>Бот для заявок:</b>
             👉 <a href="https://t.me/greenhill_camp_bot">@greenhill_camp_bot</a>
