@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -17,6 +17,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
+    restart: always
 
   telegram_bot:
     build: .

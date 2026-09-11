@@ -30,11 +30,18 @@ Telegram-бот для детского языкового лагеря **«Gree
 
 ---
 
-## 📋 Требования для запуска
+## 📋 Требования к системе
 
-На компьютере или сервере должны быть установлены:
+### Локальная разработка:
 * [Git](https://git-scm.com/)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) (или Docker Engine + Docker Compose Plugin)
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+### Сервер (VPS):
+* **ОС:** Ubuntu 22.04 / 24.04 LTS или Debian 11 / 12
+* **CPU:** от 1 vCPU
+* **RAM:** рекомендуется **от 2 ГБ RAM** (для сборки Java-образа без проблем с памятью)  
+  *Если у вас VPS с 1 ГБ RAM, обязательно создайте Swap-файл (см. ниже раздел про сервер).*
+* **Диск:** от 15–20 ГБ свободного места.
 
 ---
 
@@ -49,13 +56,13 @@ cd greenhill_camp_bot
 
 ### Шаг 2. Настройте файл переменных окружения `.env`
 
-Создайте файл `.env` на основе шаблона [`.env.example`](file:///.env.example):
+Создайте файл `.env` на основе шаблона `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-Откройте `.env` в любом текстовом редакторе и укажите ваши данные:
+Откройте `.env` в любом текстовом редакторе (`nano .env`) и укажите ваши данные:
 
 ```env
 # Токен бота, полученный у @BotFather в Telegram
@@ -68,10 +75,10 @@ BOT_USERNAME=greenhill_camp_bot
 # Узнать свой ID можно через бота @userinfobot
 ADMIN_TG_ID=407457271
 
-# Настройки базы данных
+# Настройки базы данных (для сервера обязательно придумайте надежный пароль!)
 POSTGRES_DB=greenhill_db
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
+POSTGRES_PASSWORD=your_secure_password_here
 ```
 
 ### Шаг 3. Запустите проект
@@ -83,9 +90,9 @@ docker compose up -d --build
 ```
 
 Docker автоматически:
-1. Скачает образ PostgreSQL 15 и инициализирует базу `greenhill_db`.
-2. Соберёт образ приложения на Java 21.
-3. Дождётся готовности базы данных и запустит Telegram-бота.
+1. Запустит PostgreSQL 15 с политикой автоперезапуска `restart: always` и инициализирует базу `greenhill_db`.
+2. Соберёт образ приложения на Java 21 через multi-stage build.
+3. Дождётся готовности базы данных (`healthcheck`) и запустит Telegram-бота.
 
 Проверить статус работы контейнеров:
 ```bash
@@ -94,19 +101,60 @@ docker compose ps
 
 ---
 
-## 📊 Просмотр заявок в базе данных (DBeaver / DataGrip)
+## 🌐 Развёртывание на сервере (Production)
 
-База данных доступна с хост-машины на порту **`5433`** (чтобы избежать конфликтов со стандартным портом 5432).
+### 1. Установка Docker на чистый сервер (Ubuntu/Debian)
+Если на сервере ещё нет Docker, установите его официальным скриптом:
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+```
 
-Параметры для подключения:
-* **СУБД:** PostgreSQL
-* **Хост (Host):** `localhost` (или IP вашего сервера)
+### 2. Настройка Swap (если на сервере 1 ГБ RAM)
+Сборка Maven с Java 21 во время `docker compose build` требует 1–1.5 ГБ RAM. Чтобы процесс не завершился ошибкой `Killed` (Out of Memory):
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+### 3. Безопасность базы данных
+В `docker-compose.yaml` порт базы данных привязан к локальному адресу `127.0.0.1:5433:5432`.  
+Это гарантирует, что база **закрыта от сканеров из публичного интернета**, а подключаться к ней можно локально или безопасно через SSH-туннель.
+
+---
+
+## 📊 Подключение к базе данных через DBeaver / DataGrip
+
+### Сценарий А. При локальном запуске на компьютере
+* **Хост (Host):** `localhost`
 * **Порт (Port):** `5433`
 * **База данных (Database):** `greenhill_db`
-* **Пользователь (Username):** `postgres`
-* **Пароль (Password):** `postgres`
+* **Пользователь:** `postgres`
+* **Пароль:** пароль из `.env`
 
-Все заявки сохраняются в таблице **`applications`**.
+---
+
+### Сценарий Б. Подключение к серверу (через безопасный SSH-туннель)
+Так как база закрыта от внешнего интернета, в **DBeaver** настраивается безопасное подключение через SSH:
+
+1. В настройках соединения (вкладка **Main**):
+   * **Host:** `localhost`
+   * **Port:** `5433`
+   * **Database:** `greenhill_db`
+   * **Username:** `postgres`
+   * **Password:** пароль из вашего `.env` на сервере
+2. Перейдите во вкладку **SSH**:
+   * Поставьте галочку **Use SSH Tunnel**
+   * **Host / IP:** публичный IP-адрес вашего сервера
+   * **Port:** `22`
+   * **User Name:** `root` (или пользователь сервера)
+   * **Authentication Method:** Password или Private Key (ваш SSH-ключ)
+3. Нажмите **Test Tunnel** -> **Test Connection**. DBeaver безопасно подключится к базе данных на сервере!
+
+Все входящие заявки хранятся в таблице **`applications`**.
 
 ---
 
@@ -115,6 +163,11 @@ docker compose ps
 * **Посмотреть логи бота в реальном времени:**
   ```bash
   docker compose logs -f telegram_bot
+  ```
+
+* **Посмотреть логи базы данных:**
+  ```bash
+  docker compose logs -f postgres
   ```
 
 * **Остановить проект:**
@@ -132,12 +185,18 @@ docker compose ps
   docker compose restart
   ```
 
-* **Полная остановка и удаление контейнеров (данные сохраняются):**
+* **Обновить код после git pull:**
+  ```bash
+  git pull
+  docker compose up -d --build
+  ```
+
+* **Полная остановка и удаление контейнеров (данные в базе сохраняются):**
   ```bash
   docker compose down
   ```
 
-* **Сброс и очистка базы данных (удаление томов данных):**
+* **Полный сброс базы данных (удаление всех таблиц и заявок):**
   ```bash
   docker compose down -v
   ```
