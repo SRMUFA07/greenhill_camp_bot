@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/greenhill_db
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/greenhill_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -15,8 +15,8 @@ spring:
 
 telegram:
   bot:
-    token: ${TELEGRAM_BOT_TOKEN:8503069356:AAFfJPsn-vZPlqJjHDN02IaWOLyxdagHiSg}
-    username: ${TELEGRAM_BOT_USERNAME:greenhill_camp_bot}
+    token: ${BOT_TOKEN}
+    username: ${BOT_USERNAME:greenhill_camp_bot}
 
 server:
   port: 8080

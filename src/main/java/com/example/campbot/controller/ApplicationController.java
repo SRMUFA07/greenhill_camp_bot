@@ -38,7 +38,6 @@ public class ApplicationController {
     private static final String IMAGE_2_PATH = "/images/info1.jpeg";
     private static final String IMAGE_3_PATH = "/images/info5.jpg";
     private static final String IMAGE_4_PATH = "/images/info6.jpg";
-    private static final Long ADMIN_TG_ID = 407457271L;
 
     public ApplicationController(ApplicationService applicationService) {
         this.applicationService = applicationService;
@@ -189,7 +188,7 @@ public class ApplicationController {
         sendMessage(chatId, confirmationMessage, bot);
 
         // Отправляем копию админу
-        sendMessage(ADMIN_TG_ID, "📥 Новая заявка!\n\n\n" + confirmationMessage, bot);
+        sendMessage(Long.parseLong(System.getenv("ADMIN_TG_ID")), "📥 Новая заявка!\n\n\n" + confirmationMessage, bot);
 
         // Показываем главное меню снова
         showMainMenu(chatId, bot);
